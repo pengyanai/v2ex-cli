@@ -9,9 +9,11 @@ AI-agent friendly CLI for [V2EX](https://v2ex.com). Dense, scriptable, JSON-firs
 
 ```sh
 npm install -g @pengyanai/v2ex-cli
-export V2EX_TOKEN=...   # https://www.v2ex.com/settings/tokens
-v2ex hot --limit 5
+v2ex hot --limit 5          # no token needed for read commands
+v2ex topics qna --limit 5   # also public
 ```
+
+V2EX is a public forum — most read commands work anonymously. Set `V2EX_TOKEN` only when you need your own notifications / member info.
 
 ## Why
 
@@ -34,9 +36,17 @@ npx @pengyanai/v2ex-cli hot
 
 Node.js ≥ 18 required.
 
-## Auth
+## Auth (optional)
 
-Get a token at <https://www.v2ex.com/settings/tokens>, then either:
+V2EX's public API serves most read endpoints anonymously. You only need a token for:
+
+- `v2ex auth` — token check itself
+- `v2ex notifications` — your own notifications
+- `v2ex member` (without username) — your own profile
+
+Everything else (`hot`, `latest`, `nodes`, `topics`, `topic`, `replies`, `member <username>`) works with no setup.
+
+When you do want auth, get a token at <https://www.v2ex.com/settings/tokens>, then either:
 
 ```sh
 export V2EX_TOKEN=xxxxxxxx
@@ -61,13 +71,13 @@ Verify: `v2ex auth` (exit 0 = ok, exit 2 = bad token).
 | Command | Auth | Purpose |
 |---|---|---|
 | `v2ex auth` | yes | verify token, print authenticated user |
-| `v2ex nodes [name]` | mixed | list curated nodes; with name → fetch node metadata |
-| `v2ex topics <node>` | yes | topics under a node, paginated |
-| `v2ex topic <id> [--with-replies]` | yes | topic body + meta, optionally inline first replies page |
-| `v2ex replies <topicId>` | yes | replies of a topic, floor-numbered |
+| `v2ex nodes [name]` | no | list curated nodes; with name → fetch node metadata |
+| `v2ex topics <node>` | no | topics under a node, paginated |
+| `v2ex topic <id> [--with-replies]` | no | topic body + meta, optionally inline first replies page |
+| `v2ex replies <topicId>` | no | replies of a topic, floor-numbered |
 | `v2ex hot [--limit N]` | no | front-page hot topics |
 | `v2ex latest [--limit N]` | no | latest topics across the site |
-| `v2ex member [username]` | yes | profile (own if username omitted) |
+| `v2ex member [username]` | optional | named user → public; own profile (no arg) → token |
 | `v2ex notifications` | yes | your notifications |
 
 Universal flags: `--json`, `--no-color`, `-V`/`--version`, `-h`/`--help`. Per-command: `-p/--page`, `-l/--limit` where applicable.

@@ -1,14 +1,19 @@
-import { api } from '../lib/client.mjs'
+import { apiV1 } from '../lib/client.mjs'
 import { emit, relTime, trunc } from '../lib/output.mjs'
 
 export function registerTopic(program) {
   program
     .command('topic <id>')
-    .description('show a topic: title, author, node, body, optional replies')
+    .description('show a topic: title, author, node, body, optional replies. public, no auth.')
     .option('--with-replies', 'include first page of replies inline')
     .option('-p, --replies-page <n>', 'replies page when --with-replies', '1')
     .action(async (id, opts, cmd) => {
-      const { result } = await api(`topics/${encodeURIComponent(id)}`)
+      const arr = await apiV1(`topics/show.json?id=${encodeURIComponent(id)}`)
+      const result = Array.isArray(arr) ? arr[0] : arr
+      if (!result) {
+        process.stderr.write(`v2ex: topic ${id} not found\n`)
+        process.exit(1)
+      }
       const out = {
         id: result.id,
         title: result.title,
@@ -22,7 +27,7 @@ export function registerTopic(program) {
         content: (result.content || '').replace(/\r/g, ''),
       }
       if (opts.withReplies) {
-        const { result: rs } = await api(`topics/${encodeURIComponent(id)}/replies?p=${Number(opts.repliesPage) || 1}`)
+        const rs = await apiV1(`replies/show.json?topic_id=${encodeURIComponent(id)}&p=${Number(opts.repliesPage) || 1}`)
         out.replies_list = (rs || []).map((r, i) => ({
           floor: (Number(opts.repliesPage) - 1) * 100 + i + 1,
           author: r.member?.username,

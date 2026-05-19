@@ -1,16 +1,15 @@
-import { api } from '../lib/client.mjs'
+import { apiV1 } from '../lib/client.mjs'
 import { emit, table, trunc, relTime } from '../lib/output.mjs'
-
 
 export function registerReplies(program) {
   program
     .command('replies <topicId>')
-    .description('list replies of a topic')
+    .description('list replies of a topic. public, no auth.')
     .option('-p, --page <n>', 'page number', '1')
     .option('-l, --limit <n>', 'cap output rows')
     .action(async (id, opts, cmd) => {
       const page = Number(opts.page) || 1
-      const { result } = await api(`topics/${encodeURIComponent(id)}/replies?p=${page}`)
+      const result = await apiV1(`replies/show.json?topic_id=${encodeURIComponent(id)}&p=${page}`)
       let list = (result || []).map((r, i) => ({
         floor: (page - 1) * 100 + i + 1,
         id: r.id,

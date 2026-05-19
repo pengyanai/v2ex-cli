@@ -96,6 +96,24 @@ v2ex nodes | cut -f1
 
 ## Error handling for agents
 
+## Auth requirement matrix
+
+| Command | Anonymous works? | Notes |
+|---|---|---|
+| `auth` | no | the token check itself |
+| `nodes` / `nodes <name>` | yes | curated list is local; named lookup uses public v1 |
+| `topics <node>` | yes | v1 `/topics/show.json?node_name=` |
+| `topic <id>` | yes | v1 `/topics/show.json?id=` |
+| `replies <topicId>` | yes | v1 `/replies/show.json?topic_id=` |
+| `hot` / `latest` | yes | v1 |
+| `member <username>` | yes | v1 `/members/show.json` |
+| `member` (no arg) | no | needs token to know who "self" is |
+| `notifications` | no | personal data |
+
+Token discovery: `V2EX_TOKEN` env > `~/.v2ex.json`. Without one, anonymous commands still work; auth-required commands exit 1 with `Token not found`.
+
+## Error handling for agents
+
 | stderr starts with | exit | meaning | suggested LLM action |
 |---|---|---|---|
 | `v2ex: missing token` | 2 | no `V2EX_TOKEN` and no `~/.v2ex.json` | ask user for a token |

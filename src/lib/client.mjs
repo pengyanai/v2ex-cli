@@ -1,10 +1,10 @@
 import { ofetch } from 'ofetch'
 import { HttpsProxyAgent } from 'https-proxy-agent'
-import { loadConfig, requireToken } from './config.mjs'
+import { loadConfig } from './config.mjs'
 
 let _v2, _v1
-function build(baseURL, requireAuth) {
-  const cfg = requireAuth ? requireToken() : loadConfig()
+function build(baseURL) {
+  const cfg = loadConfig()
   const opts = {
     baseURL,
     headers: cfg.token ? { Authorization: `Bearer ${cfg.token}` } : {},
@@ -14,13 +14,13 @@ function build(baseURL, requireAuth) {
   return ofetch.create(opts)
 }
 
-export function v2(opts = {}) {
-  if (!_v2) _v2 = build(loadConfig().baseURL, opts.requireAuth !== false)
+export function v2() {
+  if (!_v2) _v2 = build(loadConfig().baseURL)
   return _v2
 }
 
-export function v1(opts = {}) {
-  if (!_v1) _v1 = build('https://www.v2ex.com/api/', opts.requireAuth === true)
+export function v1() {
+  if (!_v1) _v1 = build('https://www.v2ex.com/api/')
   return _v1
 }
 
