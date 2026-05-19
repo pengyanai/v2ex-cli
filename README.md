@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@pengyanai/v2ex-cli?logo=npm)](https://www.npmjs.com/package/@pengyanai/v2ex-cli)
 [![GitHub release](https://img.shields.io/github/v/release/pengyanai/v2ex-cli?display_name=tag&sort=semver)](https://github.com/pengyanai/v2ex-cli/releases/latest)
 [![Release date](https://img.shields.io/github/release-date/pengyanai/v2ex-cli)](https://github.com/pengyanai/v2ex-cli/releases/latest)
+[![release workflow](https://img.shields.io/github/actions/workflow/status/pengyanai/v2ex-cli/release.yml?label=release&logo=github)](https://github.com/pengyanai/v2ex-cli/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/github/license/pengyanai/v2ex-cli)](./LICENSE)
 
 AI-agent friendly CLI for [V2EX](https://v2ex.com). Dense, scriptable, JSON-first.
