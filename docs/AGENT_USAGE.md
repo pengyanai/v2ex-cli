@@ -15,7 +15,7 @@ If you're wrapping `v2ex-cli` as a tool for an LLM, the smallest useful surface 
     "properties": {
       "command": {
         "type": "string",
-        "enum": ["auth", "nodes", "topics", "topic", "replies", "hot", "latest", "member", "notifications"]
+        "enum": ["auth", "nodes", "topics", "topic", "replies", "hot", "latest", "member", "notifications", "search"]
       },
       "args": { "type": "array", "items": { "type": "string" } },
       "json": { "type": "boolean", "default": true }
@@ -61,6 +61,16 @@ v2ex topic 1213548 --with-replies --json \
 ```sh
 v2ex notifications --json --limit 5 \
   | jq -r '.[] | "[\(.created)] \(.from) -> #\(.topic_id): \(.text)"'
+```
+
+### Search by keyword (third-party SOV2EX)
+
+```sh
+v2ex search 遛娃 --size 10 --json \
+  | jq -r '.hits[] | "\(.id)\t\(.replies)\t\(.title)"'
+
+# AND multiple words, sort by recency
+v2ex search openai gpt-5 --sort created --size 5
 ```
 
 ### Look up a member
@@ -109,6 +119,7 @@ v2ex nodes | cut -f1
 | `member <username>` | yes | v1 `/members/show.json` |
 | `member` (no arg) | no | needs token to know who "self" is |
 | `notifications` | no | personal data |
+| `search <kw...>` | yes | SOV2EX (third-party) — no V2EX auth needed |
 
 Token discovery: `V2EX_TOKEN` env > `~/.v2ex.json`. Without one, anonymous commands still work; auth-required commands exit 1 with `Token not found`.
 

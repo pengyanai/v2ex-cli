@@ -8,13 +8,14 @@ import { registerHot } from './commands/hot.mjs'
 import { registerLatest } from './commands/latest.mjs'
 import { registerMember } from './commands/member.mjs'
 import { registerNotifications } from './commands/notifications.mjs'
+import { registerSearch } from './commands/search.mjs'
 
 export async function run(argv) {
   const program = new Command()
   program
     .name('v2ex')
     .description('AI-agent friendly CLI for V2EX. Dense, scriptable, JSON-first.')
-    .version('0.2.0')
+    .version('0.3.0')
     .option('--json', 'output JSON (machine-readable)')
     .option('--no-color', 'disable ANSI colors')
 
@@ -27,6 +28,7 @@ export async function run(argv) {
   registerLatest(program)
   registerMember(program)
   registerNotifications(program)
+  registerSearch(program)
 
   await program.parseAsync(argv)
 }

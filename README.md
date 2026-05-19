@@ -79,6 +79,7 @@ Verify: `v2ex auth` (exit 0 = ok, exit 2 = bad token).
 | `v2ex latest [--limit N]` | no | latest topics across the site |
 | `v2ex member [username]` | optional | named user → public; own profile (no arg) → token |
 | `v2ex notifications` | yes | your notifications |
+| `v2ex search <kw...>` | no | search topics via SOV2EX (third-party index) |
 
 Universal flags: `--json`, `--no-color`, `-V`/`--version`, `-h`/`--help`. Per-command: `-p/--page`, `-l/--limit` where applicable.
 
@@ -102,6 +103,14 @@ Read a topic with replies in one call:
 v2ex topic 1213548 --with-replies --json | jq '{title, replies, first_reply: .replies_list[0].content}'
 ```
 
+Search across all of V2EX (multiple keywords are AND):
+
+```sh
+v2ex search 遛娃 --size 5
+v2ex search openai gpt-5 --json | jq -r '.hits[].title'
+v2ex search docker --sort created --size 3
+```
+
 Pipeline-friendly: every text mode is TSV, so `awk -F'\t'` works directly.
 
 ```sh
@@ -113,7 +122,8 @@ See [`docs/AGENT_USAGE.md`](docs/AGENT_USAGE.md) for tool-use schemas and longer
 ## Project notes
 
 - Uses V2EX v2 API where it covers the use case (auth, node metadata, node topics, topic, replies, member, notifications).
-- Uses V2EX v1 (`/api/topics/hot.json`, `/api/topics/latest.json`, `/api/members/show.json`) for endpoints v2 doesn't expose. Both share the same token + proxy config.
+- Uses V2EX v1 (`/api/topics/hot.json`, `/api/topics/latest.json`, `/api/members/show.json`, `/api/topics/show.json`, `/api/replies/show.json`) for the read commands, since v1 is publicly accessible. Both share the same token + proxy config.
+- `search` uses [SOV2EX](https://www.sov2ex.com/) — V2EX has no official search endpoint. SOV2EX is community-run; treat its uptime as best-effort.
 - No public list-all-nodes endpoint exists; `v2ex nodes` ships a curated set, override via the `nodes` key in `~/.v2ex.json`.
 
 The full origin prompt and iteration log lives in [`docs/PROMPTS.md`](docs/PROMPTS.md).

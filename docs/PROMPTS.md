@@ -62,7 +62,7 @@ There is no public endpoint to enumerate all nodes; `v2ex nodes` therefore ships
 ## Things deliberately not built (yet)
 
 - **Write actions** (post topic, reply, thank). The token scope on V2EX includes write, but agents posting forum content unsupervised is the wrong default. If added later, gate behind `--yes` and require an explicit `V2EX_ALLOW_WRITES=1`.
-- **Search.** V2EX itself doesn't ship search in either API. SOV2EX (`https://www.sov2ex.com/api/search`) exists but is third-party; pulling it in needs a separate decision about reliance on a non-official service.
+- ~~**Search.** V2EX itself doesn't ship search in either API. SOV2EX (`https://www.sov2ex.com/api/search`) exists but is third-party; pulling it in needs a separate decision about reliance on a non-official service.~~ Shipped in 0.3.0 (issue #7) on user request — README and AGENT_USAGE flag it as third-party so callers know the dependency.
 - **Output formats other than text/JSON** (yaml, csv). YAGNI until an agent recipe actually needs them.
 - **Rate-limit handling.** Current behavior is to surface the API's 429 verbatim and exit 1. Retry/backoff would hide failures from the agent that called us, which is worse than failing fast.
 
