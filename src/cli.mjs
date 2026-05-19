@@ -1,5 +1,9 @@
 import { Command } from 'commander'
 import { registerAuth } from './commands/auth.mjs'
+import { registerNodes } from './commands/nodes.mjs'
+import { registerTopics } from './commands/topics.mjs'
+import { registerTopic } from './commands/topic.mjs'
+import { registerReplies } from './commands/replies.mjs'
 
 export async function run(argv) {
   const program = new Command()
@@ -11,6 +15,10 @@ export async function run(argv) {
     .option('--no-color', 'disable ANSI colors')
 
   registerAuth(program)
+  registerNodes(program)
+  registerTopics(program)
+  registerTopic(program)
+  registerReplies(program)
 
   await program.parseAsync(argv)
 }
