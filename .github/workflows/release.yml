@@ -1,0 +1,96 @@
+name: release
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - package.json
+  workflow_dispatch:
+
+permissions:
+  contents: write   # for tag + release
+  id-token: write   # for npm provenance
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Read version
+        id: v
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          NAME=$(node -p "require('./package.json').name")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if tag already exists
+        id: check
+        run: |
+          if git rev-parse "refs/tags/v${{ steps.v.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true"  >> "$GITHUB_OUTPUT"
+            echo "Tag v${{ steps.v.outputs.version }} already exists — nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install
+        if: steps.check.outputs.exists == 'false'
+        run: npm ci || npm install --no-audit --no-fund
+
+      - name: Smoke test
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          node bin/v2ex.mjs --version
+          node bin/v2ex.mjs --help > /dev/null
+
+      - name: Publish to npm
+        if: steps.check.outputs.exists == 'false'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+      - name: Tag commit
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.v.outputs.tag }}" -m "${{ steps.v.outputs.tag }}"
+          git push origin "${{ steps.v.outputs.tag }}"
+
+      - name: Build release notes
+        if: steps.check.outputs.exists == 'false'
+        id: notes
+        run: |
+          PREV=$(git tag --list 'v*' --sort=-v:refname | grep -v "^${{ steps.v.outputs.tag }}$" | head -1)
+          {
+            echo "## Changes"
+            if [ -n "$PREV" ]; then
+              git log --pretty=format:'- %s' "$PREV..${{ steps.v.outputs.tag }}^" 2>/dev/null \
+                || git log --pretty=format:'- %s' "$PREV..HEAD"
+            else
+              git log --pretty=format:'- %s' -20
+            fi
+            echo
+            echo
+            echo "📦 npm: \`npm install -g ${{ steps.v.outputs.name }}@${{ steps.v.outputs.version }}\`"
+          } > NOTES.md
+          cat NOTES.md
+
+      - name: Create GitHub release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.v.outputs.tag }}" \
+            --title "${{ steps.v.outputs.tag }}" \
+            --notes-file NOTES.md
