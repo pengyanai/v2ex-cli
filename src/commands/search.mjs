@@ -13,16 +13,19 @@ export function registerSearch(program) {
     .description('search topics via SOV2EX (third-party). multiple words = AND.')
     .option('-s, --size <n>', 'results per page (1-50)', '20')
     .option('-f, --from <n>', 'offset (for paging)', '0')
-    .option('--sort <mode>', 'created | sumup (relevance, default)', 'sumup')
+    .option('--sort <mode>', 'replies (default; relevance window then by replies desc) | created | sumup', 'replies')
     .option('--node <id>', 'restrict to a node id (numeric)')
     .option('--user <username>', 'restrict to a username')
     .action(async (kw, opts, cmd) => {
       const cfg = loadConfig()
+      // sov2ex itself only supports sumup (relevance) and created.
+      // "replies" is a client-side re-sort over the fetched page.
+      const remoteSort = opts.sort === 'created' ? 'created' : 'sumup'
       const params = new URLSearchParams({
         q: kw.join(' '),
         size: String(Math.min(50, Math.max(1, Number(opts.size) || 20))),
         from: String(Math.max(0, Number(opts.from) || 0)),
-        sort: opts.sort === 'created' ? 'created' : 'sumup',
+        sort: remoteSort,
       })
       if (opts.node) params.set('node', String(opts.node))
       if (opts.user) params.set('username', opts.user)
@@ -40,7 +43,7 @@ export function registerSearch(program) {
         process.exit(1)
       }
 
-      const hits = (data.hits || []).map((h) => {
+      let hits = (data.hits || []).map((h) => {
         const s = h._source || {}
         return {
           id: s.id,
@@ -55,16 +58,21 @@ export function registerSearch(program) {
         }
       })
 
+      if (opts.sort === 'replies' || !opts.sort) {
+        hits.sort((a, b) => (b.replies ?? 0) - (a.replies ?? 0))
+      }
+
       const out = {
         query: kw.join(' '),
         total: data.total ?? hits.length,
         from: Number(opts.from) || 0,
         size: hits.length,
+        sort: opts.sort,
         hits,
       }
 
       emit(cmd, out, (d) => {
-        const head = `query=${d.query}\ttotal=${d.total}\tshown=${d.size}@${d.from}`
+        const head = `query=${d.query}\ttotal=${d.total}\tshown=${d.size}@${d.from}\tsort=${d.sort}`
         if (!d.hits.length) return head + '\n(no results)'
         const body = table(d.hits.map((h) => [
           h.id,
