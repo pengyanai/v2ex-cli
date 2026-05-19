@@ -1,6 +1,7 @@
 import { api } from '../lib/client.mjs'
 import { emit, table, trunc, relTime } from '../lib/output.mjs'
 
+
 export function registerReplies(program) {
   program
     .command('replies <topicId>')
@@ -19,9 +20,12 @@ export function registerReplies(program) {
       }))
       if (opts.limit) list = list.slice(0, Number(opts.limit))
       emit(cmd, list, (rows) =>
-        rows.map((r) =>
-          `#${r.floor}\t${r.author}\t${relTime(r.created)}\t${trunc(r.content, 200)}`,
-        ).join('\n'),
+        table(rows.map((r) => [
+          `#${r.floor}`,
+          r.author,
+          relTime(r.created),
+          trunc(r.content, 200),
+        ])),
       )
     })
 }

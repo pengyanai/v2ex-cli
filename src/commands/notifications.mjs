@@ -1,5 +1,5 @@
 import { api } from '../lib/client.mjs'
-import { emit, trunc, relTime } from '../lib/output.mjs'
+import { emit, table, trunc, relTime } from '../lib/output.mjs'
 
 export function registerNotifications(program) {
   program
@@ -21,9 +21,13 @@ export function registerNotifications(program) {
       }))
       if (opts.limit) list = list.slice(0, Number(opts.limit))
       emit(cmd, list, (rows) =>
-        rows.map((n) =>
-          `${n.id}\t${n.from}\t${relTime(n.created)}\t#${n.topic_id}\t${trunc(n.text + (n.payload ? ' :: ' + n.payload : ''), 120)}`,
-        ).join('\n'),
+        table(rows.map((n) => [
+          n.id,
+          n.from,
+          relTime(n.created),
+          `#${n.topic_id}`,
+          trunc(n.text + (n.payload ? ' :: ' + n.payload : ''), 120),
+        ])),
       )
     })
 }
