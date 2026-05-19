@@ -103,13 +103,55 @@ Read a topic with replies in one call:
 v2ex topic 1213548 --with-replies --json | jq '{title, replies, first_reply: .replies_list[0].content}'
 ```
 
-Search across all of V2EX (multiple keywords are AND):
+Search across all of V2EX (multiple shell args are AND-joined; SOV2EX runs on Elasticsearch so its query syntax is available too):
 
 ```sh
 v2ex search 遛娃 --size 5
 v2ex search openai gpt-5 --json | jq -r '.hits[].title'
 v2ex search docker --sort created --size 3
 ```
+
+### Search showcase
+
+OR across many terms with `|` (Elasticsearch query_string syntax):
+
+```sh
+v2ex search '家庭|矛盾|孩子|教育|原生家庭|父母|养老|婚姻|婆媳' --size 10
+```
+
+Exact phrase with quotes:
+
+```sh
+v2ex search '"distributed lock"' --size 5
+```
+
+Required term + nice-to-have:
+
+```sh
+v2ex search '+rust 性能 OR 内存'
+```
+
+Restrict to a node and a user:
+
+```sh
+v2ex search 性能 --node 25 --user livid
+```
+
+Top 3 most-replied hits, titles only:
+
+```sh
+v2ex search '副业|赚钱' --size 30 --json \
+  | jq -r '.hits | sort_by(-.replies) | .[0:3][] | "\(.replies)\t\(.title)"'
+```
+
+Count how many hits in the last 30 days mention a topic:
+
+```sh
+v2ex search 'AI 编辑器' --sort created --size 50 --json \
+  | jq '[.hits[] | select(.created > (now - 30*86400))] | length'
+```
+
+Note: SOV2EX is community-run; complex queries that overload its parser may return `400`. Quote the whole query string in shells (single quotes work safely with `|`, `+`, `"`).
 
 Pipeline-friendly: every text mode is TSV, so `awk -F'\t'` works directly.
 

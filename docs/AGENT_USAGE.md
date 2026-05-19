@@ -65,12 +65,25 @@ v2ex notifications --json --limit 5 \
 
 ### Search by keyword (third-party SOV2EX)
 
-```sh
-v2ex search 遛娃 --size 10 --json \
-  | jq -r '.hits[] | "\(.id)\t\(.replies)\t\(.title)"'
+SOV2EX runs on Elasticsearch — beyond simple keywords, the query string supports `|` (OR), `+term` (must), `-term` (must-not), `"phrase"` (exact). Quote the whole expression in your shell.
 
-# AND multiple words, sort by recency
+```sh
+# Simple AND (multiple shell args)
 v2ex search openai gpt-5 --sort created --size 5
+
+# OR across many terms
+v2ex search '家庭|矛盾|孩子|教育|原生家庭|父母|养老|婚姻|婆媳' --size 10 --json \
+  | jq -r '.hits[] | "\(.replies)\t\(.title)"'
+
+# Exact phrase
+v2ex search '"distributed lock"' --json | jq '.total'
+
+# Required term + optional
+v2ex search '+rust 性能 OR 内存' --size 5
+
+# Top-N by replies (default sort already does this; explicit for clarity)
+v2ex search '副业|赚钱' --size 30 --json \
+  | jq -r '.hits | sort_by(-.replies) | .[0:5][] | "\(.replies)\t\(.id)\t\(.title)"'
 ```
 
 ### Look up a member
