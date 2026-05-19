@@ -44,7 +44,7 @@ Five issues were filed up front to chunk the work into reviewable commits:
 | 2 | feat: read commands — nodes / topics / topic / replies | yes — `feat: read commands ... (closes #2)` |
 | 3 | feat: discovery & user — hot / latest / member / notifications | yes — `feat: discovery & user ... (closes #3)` |
 | 4 | docs: README + PROMPTS + AGENT_USAGE | this commit |
-| 5 | release: v0.1.0 to npm + GitHub release | upcoming |
+| 5 | release: v0.1.0 to npm + GitHub release | yes — published as `@pengyanai/v2ex-cli@0.1.0` |
 
 Each `feat:` commit closes its issue automatically via the `closes #N` trailer.
 
