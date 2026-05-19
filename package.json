@@ -1,0 +1,42 @@
+{
+  "name": "v2ex-cli",
+  "version": "0.1.0",
+  "description": "AI-agent friendly CLI for V2EX. Dense, scriptable, JSON-first.",
+  "type": "module",
+  "bin": {
+    "v2ex": "./bin/v2ex.mjs"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "scripts": {
+    "start": "node bin/v2ex.mjs",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "v2ex",
+    "cli",
+    "ai-agent",
+    "llm",
+    "tool-use"
+  ],
+  "author": "pengyanai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pengyanai/v2ex-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pengyanai/v2ex-cli/issues"
+  },
+  "homepage": "https://github.com/pengyanai/v2ex-cli#readme",
+  "dependencies": {
+    "commander": "^12.1.0",
+    "https-proxy-agent": "^7.0.6",
+    "ofetch": "^1.4.1"
+  }
+}
