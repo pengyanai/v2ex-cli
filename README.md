@@ -1,5 +1,6 @@
 # v2ex-cli
 
+[![npm](https://img.shields.io/npm/v/@pengyanai/v2ex-cli?logo=npm)](https://www.npmjs.com/package/@pengyanai/v2ex-cli)
 [![GitHub release](https://img.shields.io/github/v/release/pengyanai/v2ex-cli?display_name=tag&sort=semver)](https://github.com/pengyanai/v2ex-cli/releases/latest)
 [![Release date](https://img.shields.io/github/release-date/pengyanai/v2ex-cli)](https://github.com/pengyanai/v2ex-cli/releases/latest)
 [![License: MIT](https://img.shields.io/github/license/pengyanai/v2ex-cli)](./LICENSE)
@@ -7,7 +8,7 @@
 AI-agent friendly CLI for [V2EX](https://v2ex.com). Dense, scriptable, JSON-first.
 
 ```sh
-npm install -g v2ex-cli
+npm install -g @pengyanai/v2ex-cli
 export V2EX_TOKEN=...   # https://www.v2ex.com/settings/tokens
 v2ex hot --limit 5
 ```
@@ -26,9 +27,9 @@ Design rules:
 ## Install
 
 ```sh
-npm install -g v2ex-cli
+npm install -g @pengyanai/v2ex-cli
 # or run without install
-npx v2ex-cli hot
+npx @pengyanai/v2ex-cli hot
 ```
 
 Node.js ≥ 18 required.

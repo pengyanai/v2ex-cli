@@ -1,5 +1,8 @@
 {
-  "name": "v2ex-cli",
+  "name": "@pengyanai/v2ex-cli",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
   "description": "AI-agent friendly CLI for V2EX. Dense, scriptable, JSON-first.",
   "type": "module",
