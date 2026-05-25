@@ -30,7 +30,14 @@ async function call(fetcher, path, opts) {
   } catch (err) {
     const status = err?.response?.status
     const msg = err?.data?.message || err?.message || String(err)
-    process.stderr.write(`v2ex: API error${status ? ` ${status}` : ''}: ${msg}\n`)
+    let hint = ''
+    if (/fetch failed|ECONNREFUSED|ETIMEDOUT|ENOTFOUND/i.test(msg)) {
+      const cfg = loadConfig()
+      hint = cfg.proxy
+        ? `\n  hint: proxy=${cfg.proxy} — verify it is reachable`
+        : '\n  hint: network unreachable. set HTTPS_PROXY / ALL_PROXY or check DNS'
+    }
+    process.stderr.write(`v2ex: API error${status ? ` ${status}` : ''}: ${msg}${hint}\n`)
     process.exit(1)
   }
 }

@@ -3,7 +3,8 @@ import { emit, relTime } from '../lib/output.mjs'
 
 export function registerMember(program) {
   program
-    .command('member [username]')
+    .command('user [username]')
+    .alias('member')
     .description('show member profile (own if username omitted)')
     .action(async (username, _opts, cmd) => {
       let m

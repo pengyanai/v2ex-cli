@@ -3,8 +3,9 @@ import { emit, table, trunc, relTime } from '../lib/output.mjs'
 
 export function registerNotifications(program) {
   program
-    .command('notifications')
+    .command('inbox')
     .alias('notif')
+    .alias('notifications')
     .description('list your notifications (auth required)')
     .option('-p, --page <n>', 'page number', '1')
     .option('-l, --limit <n>', 'cap output rows')

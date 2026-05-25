@@ -1,12 +1,14 @@
 import { apiV1 } from '../lib/client.mjs'
 import { emit, relTime, trunc } from '../lib/output.mjs'
+import { collapseReplies } from '../lib/collapse.mjs'
 
 export function registerTopic(program) {
   program
     .command('topic <id>')
     .description('show a topic: title, author, node, body, optional replies. public, no auth.')
-    .option('--with-replies', 'include first page of replies inline')
+    .option('-r, --with-replies', 'include first page of replies inline')
     .option('-p, --replies-page <n>', 'replies page when --with-replies', '1')
+    .option('--no-collapse', 'do not collapse duplicate / ID-only / short-noise replies')
     .action(async (id, opts, cmd) => {
       const arr = await apiV1(`topics/show.json?id=${encodeURIComponent(id)}`)
       const result = Array.isArray(arr) ? arr[0] : arr
@@ -36,22 +38,44 @@ export function registerTopic(program) {
         }))
       }
       emit(cmd, out, (d) => {
-        const head = [
-          `id\t${d.id}`,
-          `title\t${d.title}`,
-          `author\t${d.author}`,
-          `node\t${d.node}\t${d.node_title}`,
-          `replies\t${d.replies}`,
-          `created\t${relTime(d.created)} ago`,
-          `url\t${d.url}`,
-          '',
-          d.content,
-        ].join('\n')
-        if (!d.replies_list) return head
-        const tail = d.replies_list.map((r) =>
-          `\n--- #${r.floor} ${r.author} (${relTime(r.created)} ago) ---\n${trunc(r.content, 1000)}`,
-        ).join('\n')
-        return head + '\n' + tail
+        const lines = []
+        // Compact header — one fact per line, no padding noise
+        lines.push(`# ${d.title}`)
+        lines.push(`@${d.author}  ·  ${d.node}/${d.node_title}  ·  ${d.replies} replies  ·  ${relTime(d.created)} ago`)
+        lines.push(d.url)
+        lines.push('')
+        lines.push(d.content)
+
+        if (d.replies_list) {
+          lines.push('')
+          lines.push('─── replies ───')
+          if (opts.collapse !== false) {
+            const { sections, buckets, stats } = collapseReplies(d.replies_list)
+            for (const s of sections) {
+              lines.push('')
+              const dupTag = s.dupCount
+                ? `  [+${s.dupCount} similar: ${s.dupAuthors.join(', ')}${s.dupCount > s.dupAuthors.length ? ', …' : ''}]`
+                : ''
+              lines.push(`#${s.floor} @${s.author} · ${relTime(s.created)} ago${dupTag}`)
+              lines.push(trunc(s.content, 1000))
+            }
+            for (const b of buckets) {
+              lines.push('')
+              const label = b.kind === 'id-only' ? 'ID-only replies' : 'noise / short replies'
+              const range = b.floors[0] === b.floors[1] ? `#${b.floors[0]}` : `#${b.floors[0]}–#${b.floors[1]}`
+              lines.push(`… ${b.count} ${label} (${range}): ${b.sampleAuthors.join(', ')}${b.count > b.sampleAuthors.length ? ', …' : ''}`)
+            }
+            lines.push('')
+            lines.push(`─── ${stats.kept} shown · ${stats.dupCollapsed} dup · ${stats.idOnly} id-only · ${stats.noise} noise · ${stats.total} total ───`)
+          } else {
+            for (const r of d.replies_list) {
+              lines.push('')
+              lines.push(`#${r.floor} @${r.author} · ${relTime(r.created)} ago`)
+              lines.push(trunc(r.content, 1000))
+            }
+          }
+        }
+        return lines.join('\n')
       })
     })
 }
